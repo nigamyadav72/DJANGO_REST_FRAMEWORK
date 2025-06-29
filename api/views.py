@@ -12,6 +12,11 @@ from django.http import Http404
 from rest_framework import mixins, generics,viewsets
 from blogs.models import Blog, Comment
 from blogs.serializers import blogSerializer, commentSerializer
+from .paginations import CustomPagination
+from employees.filters import EmployeeFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
+
+
 
 
 @api_view(['GET','POST'])
@@ -193,11 +198,17 @@ def studentDetailView(request, pk):
 class EmployeeViewset(viewsets.ModelViewSet):
     queryset = Employee.objects.all()
     serializer_class = employeeSerializer
+    pagination_class = CustomPagination
+    # filterset_fields = ['designation']
+    filterset_class = EmployeeFilter 
 
 
 class BlogsView(generics.ListCreateAPIView):
     queryset = Blog.objects.all()
     serializer_class = blogSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['^blog_title']#here ^ symbol before blog_title is used to search the entire blog title using the first word of the title
+    ordering_fields = ['id', 'blog_title']
 
 
 class CommentsView(generics.ListCreateAPIView):
@@ -208,6 +219,7 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = blogSerializer
     lookup_field = 'pk'
+
 
 
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
